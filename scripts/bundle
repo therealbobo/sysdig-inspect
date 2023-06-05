@@ -17,7 +17,7 @@ fi
 copy_sysdig() {
     cd ember-electron/resources
 
-    cp -a ../../${SYSDIG_PATH}/ ./sysdig/
+	cp -a ../../${SYSDIG_PATH}/ ./sysdig/
 
     mkdir -p ./sysdig/capture-samples/
     cp ../../capture-samples/502Error.scap ./sysdig/capture-samples/

@@ -1,0 +1,71 @@
+name: CI Build
+on: [push,pull_request,workflow_dispatch]
+
+jobs:
+  build-settings:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_settings.outputs.version }}
+    steps:
+      - name: Checkout Sysdig
+        uses: actions/checkout@v3
+      - name: Get settings for this release
+        id: get_settings
+        shell: python
+        run: |
+          import os
+          import datetime
+          with open("VERSION","r") as f:
+            version = f.read()
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as ofp:
+            print(f'version={version}'.lower(), file=ofp)
+            print(f'buildnumber={datetime.datetime.now():%Y%m%d.%H%M%S}', file=ofp)
+
+  build-sysdig-inspect:
+    needs: [build-settings]
+    env:
+      BUILDER: "sysdiglabs/sysdig-inspect-builder:0.2"
+      VERSION: ${{ needs.build-settings.outputs.version }}
+      VERSION_BUILD_NUMBER: ${{ needs.build-settings.outputs.buildnumber }}
+        #INSPECT_USER_TRACKING_KEY: credentials('INSPECT_USER_TRACKING_KEY')
+
+    runs-on: ubuntu-latest
+    container:
+      image: "sysdiglabs/sysdig-inspect-builder:0.2"
+      env:
+        INSTALL_DEPS: true
+        GIT_BRANCH: dev
+        BUILD_NUMBER: 0
+        USER_TRACKING_KEY: 0
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    steps:
+      - name: Checkout Sysdig
+        uses: actions/checkout@v3
+      - name: Build sysdig-inspect
+        run: ./build/build.sh
+      - name: Upload artifacts rpm
+        uses: actions/upload-artifact@v3
+        with:
+          name: sysdig-inspect-${{ needs.release-settings.outputs.version }}.x86_64.rpm
+          path: |
+            out/linux/installers/sysdig-inspect-${{ needs.release-settings.outputs.version }}.x86_64.rpm
+      - name: Upload artifacts deb
+        uses: actions/upload-artifact@v3
+        with:
+          name: sysdig-inspect_${{ needs.release-settings.outputs.version }}_amd64.deb
+          path: |
+            out/linux/installers/sysdig-inspect_${{ needs.release-settings.outputs.version }}_amd64.deb
+      - name: Upload artifacts dmg
+        uses: actions/upload-artifact@v3
+        with:
+          name: sysdig-inspect-${{ needs.release-settings.outputs.version }}-mac.dmg
+          path: |
+            out/mac/binaries/sysdig-inspect-${{ needs.release-settings.outputs.version }}-mac.dmg
+      - name: Upload artifacts zip
+        uses: actions/upload-artifact@v3
+        with:
+          name: sysdig-inspect-${{ needs.release-settings.outputs.version }}.0-mac.zip
+          path: |
+            out/mac/binaries/sysdig-inspect-${{ needs.release-settings.outputs.version }}.0-mac.zip
+
