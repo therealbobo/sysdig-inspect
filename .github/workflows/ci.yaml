@@ -19,7 +19,7 @@ jobs:
             version = f.read()
           with open(os.environ['GITHUB_OUTPUT'], 'a') as ofp:
             print(f'version={version}'.lower(), file=ofp)
-            print(f'buildnumber={datetime.datetime.now():%Y%m%d.%H%M%S}', file=ofp)
+            print(f'buildnumber=_{datetime.datetime.now():%Y%m%d.%H%M%S}', file=ofp)
 
   build-sysdig-inspect:
     needs: [build-settings]
@@ -35,7 +35,7 @@ jobs:
       env:
         INSTALL_DEPS: true
         GIT_BRANCH: dev
-        BUILD_NUMBER: 0
+        BUILD_NUMBER: ${{ env.VERSION_BUILD_NUMBER }}
         USER_TRACKING_KEY: 0
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
@@ -47,25 +47,25 @@ jobs:
       - name: Upload artifacts rpm
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-${{ env.VERSION }}.x86_64.rpm
+          name: sysdig-inspect-${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}.x86_64.rpm
           path: |
             out/linux/installers/sysdig-inspect-${{ env.VERSION }}.x86_64.rpm
       - name: Upload artifacts deb
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect_${{ env.VERSION }}_amd64.deb
+          name: sysdig-inspect_${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}_amd64.deb
           path: |
             out/linux/installers/sysdig-inspect_${{ env.VERSION }}_amd64.deb
       - name: Upload artifacts dmg
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-${{ env.VERSION }}-mac.dmg
+          name: sysdig-inspect-${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}-mac.dmg
           path: |
-            out/mac/binaries/sysdig-inspect-${{ env.VERSION }}-mac.dmg
+            out/mac/binaries/sysdig-inspect-${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}-mac.dmg
       - name: Upload artifacts zip
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-${{ env.VERSION }}.0-mac.zip
+          name: sysdig-inspect-${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}-mac.zip
           path: |
-            out/mac/binaries/sysdig-inspect-${{ env.VERSION }}.0-mac.zip
+            out/mac/binaries/sysdig-inspect-${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}-mac.zip
 
