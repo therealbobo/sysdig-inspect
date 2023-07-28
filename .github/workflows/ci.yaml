@@ -20,13 +20,16 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as ofp:
             print(f'version={version}'.lower(), file=ofp)
             print(f'buildnumber=_{datetime.datetime.now():%Y%m%d.%H%M%S}', file=ofp)
+          print(f'version={version}'.lower())
+          print(f'buildnumber=_{datetime.datetime.now():%Y%m%d.%H%M%S}')
+
 
   build-sysdig-inspect:
     needs: [build-settings]
     env:
       BUILDER: "sysdiglabs/sysdig-inspect-builder:0.2"
       VERSION: ${{ needs.build-settings.outputs.version }}
-      VERSION_BUILD_NUMBER: ${{ needs.build-settings.outputs.buildnumber }}
+      BUILD_NUMBER: ${{ needs.build-settings.outputs.buildnumber }}
         #INSPECT_USER_TRACKING_KEY: credentials('INSPECT_USER_TRACKING_KEY')
 
     runs-on: ubuntu-latest
@@ -35,37 +38,45 @@ jobs:
       env:
         INSTALL_DEPS: true
         GIT_BRANCH: dev
-        BUILD_NUMBER: ${{ env.VERSION_BUILD_NUMBER }}
+        VERSION: ${{ needs.build-settings.outputs.version }}
+        BUILD_NUMBER: ${{ needs.build-settings.outputs.buildnumber }}
         USER_TRACKING_KEY: 0
+        BUILD_MAC: true
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
     steps:
       - name: Checkout Sysdig
         uses: actions/checkout@v3
+      - name: test
+        shell: python
+        run: |
+          print('${{ env.BUILD_NUMBER }}')
+          print('${{ env.VERSION }}')
+
       - name: Build sysdig-inspect
         run: ./build/build.sh
       - name: Upload artifacts rpm
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}.x86_64.rpm
+          name: sysdig-inspect-${{ env.VERSION }}${{ env.BUILD_NUMBER }}.x86_64.rpm
           path: |
             out/linux/installers/sysdig-inspect-${{ env.VERSION }}.x86_64.rpm
       - name: Upload artifacts deb
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect_${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}_amd64.deb
+          name: sysdig-inspect_${{ env.VERSION }}${{ env.BUILD_NUMBER }}_amd64.deb
           path: |
             out/linux/installers/sysdig-inspect_${{ env.VERSION }}_amd64.deb
       - name: Upload artifacts dmg
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}-mac.dmg
+          name: sysdig-inspect-${{ env.VERSION }}.42-mac.dmg
           path: |
-            out/mac/binaries/sysdig-inspect-${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}-mac.dmg
+            out/mac/binaries/sysdig-inspect-${{ env.VERSION }}.42-mac.zip
       - name: Upload artifacts zip
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}-mac.zip
+          name: sysdig-inspect-${{ env.VERSION }}.42-mac.zip
           path: |
-            out/mac/binaries/sysdig-inspect-${{ env.VERSION }}${{ env.VERSION_BUILD_NUMBER }}-mac.zip
+            out/mac/binaries/sysdig-inspect-${{ env.VERSION }}.42-mac.zip
 

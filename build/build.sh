@@ -118,7 +118,7 @@ install_dependencies() {
             
             mkdir -p deps/sysdig-mac
             
-            curl https://download.sysdig.com/dependencies/sysdig-${SYSDIG_VERSION_MAC}-mac.zip -o sysdig.zip
+            #curl https://download.sysdig.com/dependencies/sysdig-${SYSDIG_VERSION_MAC}-mac.zip -o sysdig.zip
             unzip -d deps/sysdig-mac sysdig.zip
         fi
     fi
