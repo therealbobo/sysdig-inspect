@@ -53,6 +53,9 @@ jobs:
           print('${{ env.BUILD_NUMBER }}')
           print('${{ env.VERSION }}')
 
+      - name: test 7z
+        run: sudo apt-get update ; sudo apt-get search p7zip
+
       - name: Build sysdig-inspect
         run: ./build/build.sh
       - name: Upload artifacts rpm
