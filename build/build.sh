@@ -61,22 +61,24 @@ setup_env() {
     fi
     if [ -z ${BUILD_NUMBER} ]
     then
-        BUILD_NUMBER=42
+        BUILD_NUMBER=''
+	else
+        BUILD_NUMBER=.${BUILD_NUMBER}
     fi
 
     set -u
 
     GIT_BRANCHNAME=$(echo ${GIT_BRANCH} | cut -d"/" -f2)
 
-    if [ "${GIT_BRANCHNAME}" = "master" ]; then
+    if [ "${GIT_BRANCHNAME}" != "dev" ]; then
         ENVIRONMENT=production
     fi
 
     INSPECT_USER_VERSION=`cat VERSION`
-    if [ "${ENVIRONMENT}" = "production" ]; then
-        INSPECT_VERSION=${INSPECT_USER_VERSION}
+    if [[ "${ENVIRONMENT}" = "production" ]]; then
+        INSPECT_VERSION=${GIT_BRANCHNAME}
     else
-        INSPECT_VERSION=${INSPECT_USER_VERSION}.${BUILD_NUMBER}
+        INSPECT_VERSION=${INSPECT_USER_VERSION}${BUILD_NUMBER}
     fi
 
     # Disabling interactive progress bar, and spinners gains 2x performances
@@ -118,12 +120,12 @@ install_dependencies() {
             
             mkdir -p deps/sysdig-mac
             
-			curl -o sysdig.dmg "https://github.com/draios/sysdig/releases/download/${SYSDIG_VERSION_MAC}/sysdig-${SYSDIG_VERSION_MAC}-x86_64.dmg"
-			7z x sysdig.dmg
-			cp -v  sysdig-${SYSDIG_VERSION_MAC}-x86_64/bin/sysdig  deps/sysdig-mac/
-			cp -v  sysdig-${SYSDIG_VERSION_MAC}-x86_64/bin/csysdig deps/sysdig-mac/
-			cp -vr sysdig-${SYSDIG_VERSION_MAC}-x86_64/share/sysdig/chisels deps/sysdig-mac/
-            #unzip -d deps/sysdig-mac sysdig.zip
+			#curl -o sysdig.dmg "https://github.com/draios/sysdig/releases/download/${SYSDIG_VERSION_MAC}/sysdig-${SYSDIG_VERSION_MAC}-x86_64.dmg"
+			#7z x sysdig.dmg
+			#cp -v  sysdig-${SYSDIG_VERSION_MAC}-x86_64/bin/sysdig  deps/sysdig-mac/
+			#cp -v  sysdig-${SYSDIG_VERSION_MAC}-x86_64/bin/csysdig deps/sysdig-mac/
+			#cp -vr sysdig-${SYSDIG_VERSION_MAC}-x86_64/share/sysdig/chisels deps/sysdig-mac/
+            unzip -d deps/sysdig-mac sysdig.zip
         fi
     fi
 }
