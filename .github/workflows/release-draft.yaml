@@ -5,6 +5,8 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+'
       - '[0-9]+.[0-9]+.[0-9]+-[a-z]+'
       - '[0-9]+.[0-9]+.[0-9]+-[a-z]+[0-9]+'
+permissions:
+  contents: write
 
 jobs:
   build-sysdig-inspect:
@@ -30,7 +32,7 @@ jobs:
       - name: Upload artifacts rpm
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-${{ env.VERSION }}.x86_64.rpm
+          name: sysdig-inspect-release-${{ env.VERSION }}.x86_64.rpm
           path: |
             out/linux/installers/sysdig-inspect-${{ env.VERSION }}.x86_64.rpm
       - name: Upload artifacts deb
@@ -52,52 +54,29 @@ jobs:
           path: |
             out/mac/binaries/sysdig-inspect-${{ env.VERSION }}-mac.zip
 
-  sign-debs:
+  create-draft-release:
     runs-on: ubuntu-latest
     needs: [build-sysdig-inspect]
     env:
-      BUILD_VERSION: ${{ github.ref_name }}
-      KEY_ID: EC51E8C4
-    container:
-      image: debian:bullseye-slim
+      VERSION: ${{ github.ref_name }}
     steps:
-      - name: Install deps
-        run: apt-get update && apt-get -y install dpkg-sig
-      - name: Download deb artifacts
+      - name: Download artifacts (linux-amd64 deb)
         uses: actions/download-artifact@v3
         with:
-          name: sysdig-inspect-release-${{ env.BUILD_VERSION }}-x86_64.deb
-      - name: Import private key
-        env:
-          PRIVATE_KEY: ${{ secrets.SYSDIG_REPO_SIGNING_KEY }}
-        run: printenv PRIVATE_KEY | gpg --import -
-      - name: Sign DEBs
-        run: dpkg-sig -k ${{ env.KEY_ID }} -s builder *.deb
-      - name: Check signature
-        run: dpkg-sig --verify *.deb
-      - name: Upload Signed DEBs
-        uses: actions/upload-artifact@v3
-        with:
-          name: sysdig-inspect-release-${{ env.BUILD_VERSION }}-x86_64.deb
-          path: "*.deb"
-
-  create-draft-release:
-    runs-on: ubuntu-latest
-    needs: [build-sysdig-inspect, sign-debs]
-    env:
-      BUILD_VERSION: ${{ github.ref_name }}
-    steps:
-      - name: Download artifacts (linux-amd64)
+          name: sysdig-inspect-release-${{ env.VERSION }}-x86_64.deb
+      - name: Download artifacts (linux-amd64 rpm)
         uses: actions/download-artifact@v3
         with:
-          name: sysdig-inspect-release-${{ env.BUILD_VERSION }}-x86_64.deb
+          name: sysdig-inspect-release-${{ env.VERSION }}.x86_64.rpm
       - name: Download artifacts (osx-amd64)
         uses: actions/download-artifact@v3
         with:
-          name: sysdig-inspect-release-${{ env.BUILD_VERSION }}-osx.zip
+          name: sysdig-inspect-release-${{ env.VERSION }}-osx.zip
+      - name: test
+        run: ls -lah /home/runner/work/sysdig-inspect/sysdig-inspect/
       - name: Create draft release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            sysdig-inspect-release-${{ env.BUILD_VERSION }}*
+            sysdig-inspect*
           draft: true
