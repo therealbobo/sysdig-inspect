@@ -15,9 +15,10 @@ jobs:
         shell: python
         run: |
           import os
+          import json
           ref_name = '${{ github.ref_name }}-${{ github.run_number }}'.replace('/','-')
-          with open("VERSION","r") as f:
-            v = f.read().strip()
+          with open("package.json","r") as f:
+            v = json.load(f)['version']
             version = f'{v}-{ref_name}'
             semver = f'{v}'
           with open(os.environ['GITHUB_OUTPUT'], 'a') as ofp:
@@ -61,25 +62,25 @@ jobs:
       - name: Upload artifacts rpm
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-${{ env.VERSION }}.x86_64.rpm
+          name: sysdig-inspect-${{ env.VERSION }}-linux-x86_64.rpm
           path: |
-            out/linux/installers/sysdig-inspect-${{ env.SEMVER }}.x86_64.rpm
+            out/linux/installers/sysdig-inspect-linux-x86_64.rpm
       - name: Upload artifacts deb
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect_${{ env.VERSION }}_amd64.deb
+          name: sysdig-inspect-${{ env.VERSION }}-linux-x86_64.deb
           path: |
-            out/linux/installers/sysdig-inspect_${{ env.SEMVER }}_amd64.deb
+            out/linux/installers/sysdig-inspect-linux-x86_64.deb
       - name: Upload artifacts dmg
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-${{ env.VERSION }}-mac.dmg
+          name: sysdig-inspect-${{ env.VERSION }}-mac-x86_64.dmg
           path: |
-            out/mac/binaries/sysdig-inspect-${{ env.SEMVER }}.0-mac.dmg
+            out/mac/binaries/sysdig-inspect-${{ env.SEMVER }}-mac-86_64.dmg
       - name: Upload artifacts zip
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-${{ env.VERSION }}-mac.zip
+          name: sysdig-inspect-${{ env.VERSION }}-mac-x86_64.zip
           path: |
-            out/mac/binaries/sysdig-inspect-${{ env.SEMVER }}.0-mac.zip
+            out/mac/binaries/sysdig-inspect-mac-x86_64.zip
 

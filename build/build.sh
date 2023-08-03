@@ -74,7 +74,7 @@ setup_env() {
         ENVIRONMENT=production
     fi
 
-    INSPECT_USER_VERSION=`cat VERSION`
+	INSPECT_USER_VERSION=$(grep '"version"' package.json | cut -d\" -f4)
     if [[ "${ENVIRONMENT}" = "production" ]]; then
         INSPECT_VERSION=${GIT_BRANCHNAME}
     else
@@ -125,7 +125,6 @@ install_dependencies() {
 			cp -v  sysdig-${SYSDIG_VERSION_MAC}-x86_64/bin/sysdig  deps/sysdig-mac/
 			cp -v  sysdig-${SYSDIG_VERSION_MAC}-x86_64/bin/csysdig deps/sysdig-mac/
 			cp -vr sysdig-${SYSDIG_VERSION_MAC}-x86_64/share/sysdig/chisels deps/sysdig-mac/
-            #unzip -d deps/sysdig-mac sysdig.zip
         fi
     fi
 }
@@ -153,6 +152,10 @@ build() {
         mkdir -p out/linux/installers
         cp -r electron-out/make/* out/linux/installers
         cp -r electron-out/Sysdig\ Inspect-linux-x64/* out/linux/binaries
+        cd out/linux/installers
+		mv *.rpm sysdig-inspect-linux-x86_64.rpm
+		mv *.deb sysdig-inspect-linux-x86_64.deb
+		cd -
     fi
 
     if [ "${BUILD_CONTAINER}" = "true" ]; then
@@ -202,10 +205,10 @@ build() {
         zip -ry Sysdig\ Inspect-darwin-x64.zip Sysdig\ Inspect-darwin-x64
         cd ..
         mkdir -p out/mac/binaries
-        cp electron-out/Sysdig\ Inspect-darwin-x64.zip out/mac/binaries/sysdig-inspect-${INSPECT_VERSION}-mac.zip
+        cp electron-out/Sysdig\ Inspect-darwin-x64.zip out/mac/binaries/sysdig-inspect-mac-x86_64.zip
         if [ "${BUILD_MAC_INSTALLER}" = "true" ]; then
             mkdir -p out/mac/installers
-            cp electron-out/make/Sysdig\ Inspect-${INSPECT_USER_VERSION}.dmg out/mac/installers/sysdig-inspect-${INSPECT_VERSION}-mac.dmg
+            cp electron-out/make/Sysdig\ Inspect-${INSPECT_USER_VERSION}.dmg out/mac/installers/sysdig-inspect-mac-x86_64.dmg
         fi
     fi
 }
