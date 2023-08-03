@@ -46,6 +46,16 @@ jobs:
     steps:
       - name: Checkout Sysdig
         uses: actions/checkout@v3
+      - name: install 7z
+        run: |
+          cd /tmp
+          sed -i '/^mozilla\/DST_Root_CA_X3/s/^/!/' /etc/ca-certificates.conf &&
+          update-ca-certificates -f &&
+          curl -L -o 7z.tar.xz https://www.7-zip.org/a/7z2301-linux-x64.tar.xz &&
+          tar -xaf 7z.tar.xz && 
+          mv 7zz /usr/bin/7z &&
+          rm -vfr /tmp/* &&
+          cd -
       - name: Build sysdig-inspect
         run: ./build/build.sh
       - name: Upload artifacts rpm
