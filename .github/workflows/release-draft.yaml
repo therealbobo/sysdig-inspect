@@ -42,27 +42,27 @@ jobs:
       - name: Upload artifacts rpm
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-release-${{ env.VERSION }}.x86_64.rpm
+          name: sysdig-inspect-release-${{ env.VERSION }}-linux-x86_64.rpm
           path: |
-            out/linux/installers/sysdig-inspect-${{ env.VERSION }}.x86_64.rpm
+            out/linux/installers/sysdig-inspect-linux-x86_64.rpm
       - name: Upload artifacts deb
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-release-${{ env.VERSION }}-x86_64.deb
+          name: sysdig-inspect-release-${{ env.VERSION }}-linux-x86_64.deb
           path: |
-            out/linux/installers/sysdig-inspect_${{ env.VERSION }}_amd64.deb
+            out/linux/installers/sysdig-inspect-linux-x86_64.deb
       - name: Upload artifacts dmg
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-release-${{ env.VERSION }}-osx.dmg
+          name: sysdig-inspect-release-${{ env.VERSION }}-mac-x86_64.dmg
           path: |
-            out/mac/binaries/sysdig-inspect-${{ env.VERSION }}-mac.dmg
+            out/mac/binaries/sysdig-inspect-${{ env.VERSION }}-mac-x86_64.dmg
       - name: Upload artifacts zip
         uses: actions/upload-artifact@v3
         with:
-          name: sysdig-inspect-release-${{ env.VERSION }}-osx.zip
+          name: sysdig-inspect-release-${{ env.VERSION }}-mac-x86_64.zip
           path: |
-            out/mac/binaries/sysdig-inspect-${{ env.VERSION }}-mac.zip
+            out/mac/binaries/sysdig-inspect-mac-x86_64.zip
 
   create-draft-release:
     runs-on: ubuntu-latest
@@ -73,20 +73,23 @@ jobs:
       - name: Download artifacts (linux-amd64 deb)
         uses: actions/download-artifact@v3
         with:
-          name: sysdig-inspect-release-${{ env.VERSION }}-x86_64.deb
+          name: sysdig-inspect-release-${{ env.VERSION }}-linux-x86_64.deb
       - name: Download artifacts (linux-amd64 rpm)
         uses: actions/download-artifact@v3
         with:
-          name: sysdig-inspect-release-${{ env.VERSION }}.x86_64.rpm
+          name: sysdig-inspect-release-${{ env.VERSION }}-linux-x86_64.rpm
       - name: Download artifacts (osx-amd64)
         uses: actions/download-artifact@v3
         with:
-          name: sysdig-inspect-release-${{ env.VERSION }}-osx.zip
+          name: sysdig-inspect-release-${{ env.VERSION }}-mac-x86_64.zip
       - name: test
         run: ls -lah /home/runner/work/sysdig-inspect/sysdig-inspect/
       - name: Create draft release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            sysdig-inspect*
+            sysdig-inspect-linux*
+            sysdig-inspect-mac*
+            sysdig-inspect-win*
           draft: true
+          generate_release_notes: true
