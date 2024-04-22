@@ -72,7 +72,11 @@ class Controller {
         //
         let execState = 'STARTED';
 
+        let stderrPresent = false;
+        let errorMessage;
+
         return new Promise((resolve, reject) => {
+
             prc.stdout.on('data', (data) => {
                 if (execState !== 'FAILED') {
                     if (response) {
@@ -85,22 +89,8 @@ class Controller {
 
             prc.stderr.on('data', (data) => {
                 console.error(`${this.sysdigPath}/${exe}`, args, 'error read from STDERR', data);
-
-                if (execState !== 'FAILED') {
-                    const message = { reason: data };
-
-                    if (response) {
-                        response.status(500);
-
-                        if (execState === 'STARTED') {
-                            response.send(JSON.stringify(message));
-                        }
-                    }
-
-                    execState = 'FAILED';
-
-                    reject(message);
-                }
+                stderrPresent = true;
+                errorMessage = {reason: data};
             });
 
             prc.on('error', (err) => {
@@ -135,7 +125,12 @@ class Controller {
                         response.end();
                     } else if (execState === 'STARTED') {
                         // Send 'no content' if nothing happened
-                        response.status(204).send();
+                        if(stderrPresent) {
+                        	response.status(500);
+                        	response.send(JSON.stringify(errorMessage));
+                        } else {
+                        	response.status(204).send();
+                        }
                     }
                 }
 
@@ -143,8 +138,12 @@ class Controller {
                     if (code === 0) {
                         resolve({code});
                     } else {
-                        const message = { reason: 'Unexpected exit', details: code };
-                        reject(message);
+                       if(stderrPresent) {
+                       	reject(errorMessage);
+                       } else {
+                       	const message = { reason: 'Unexpected exit', details: code };
+                       	reject(message);
+                       }
                     }
                 }
 
