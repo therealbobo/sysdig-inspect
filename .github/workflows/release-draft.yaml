@@ -13,6 +13,7 @@ jobs:
     env:
       BUILDER: "sysdiglabs/sysdig-inspect-builder:0.2"
       VERSION: ${{ github.ref_name }}
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
     runs-on: ubuntu-latest
     container:
@@ -69,6 +70,7 @@ jobs:
     needs: [build-sysdig-inspect]
     env:
       VERSION: ${{ github.ref_name }}
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Download artifacts (linux-amd64 deb)
         uses: actions/download-artifact@v3
